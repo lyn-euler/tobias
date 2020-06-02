@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Bundle
 import com.alipay.sdk.app.AuthTask
 import com.alipay.sdk.app.EnvUtils
 import com.alipay.sdk.app.PayTask
+import com.alipay.sdk.app.OpenAuthTask
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel.Result
 import kotlinx.coroutines.*
@@ -25,6 +27,7 @@ class TobaisPluginDelegate : CoroutineScope {
             "pay" -> pay(call, result)
             "auth" -> auth(call, result)
             "isAliPayInstalled" -> isAliPayInstalled(result)
+            "dedute" -> dedute(call, result)
             else -> result.notImplemented()
         }
     }
@@ -46,6 +49,20 @@ class TobaisPluginDelegate : CoroutineScope {
             }
         }
     }
+
+
+    private fun dedute(call: MethodCall, result: Result) {
+        val callback = OpenAuthTask.Callback { resultCode, memo, _ ->
+            launch {
+                withContext(Dispatchers.Main) {
+                    result.success(mapOf("resultStatus" to resultCode, "memo" to memo))
+                }
+            }
+        }
+        val task = OpenAuthTask(activity)
+        task.execute(call.argument("scheme"), OpenAuthTask.BizType.Deduct, mapOf("sign_params" to call.argument("signParams")), callback, false)
+    }
+
 
     private suspend fun doPayTask(orderInfo: String): Map<String, String> = withContext(Dispatchers.IO) {
         val alipay = PayTask(activity)

@@ -21,4 +21,8 @@ Future<bool> isAliPayInstalled() async {
   return await _channel.invokeMethod("isAliPayInstalled");
 }
 
+Future<Map> deduct({String signParams, String scheme}) async {
+  return await _channel.invokeMethod("deduct", {"signParams": signParams, "scheme": scheme});
+}
+
 enum AliPayEvn { ONLINE, SANDBOX }
