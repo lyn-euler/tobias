@@ -5,13 +5,16 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.JsonReader
 import com.alipay.sdk.app.AuthTask
 import com.alipay.sdk.app.EnvUtils
 import com.alipay.sdk.app.PayTask
 import com.alipay.sdk.app.OpenAuthTask
+import io.flutter.plugin.common.JSONUtil
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel.Result
 import kotlinx.coroutines.*
+import org.json.JSONObject
 import kotlin.coroutines.CoroutineContext
 
 /***
@@ -27,7 +30,7 @@ class TobaisPluginDelegate : CoroutineScope {
             "pay" -> pay(call, result)
             "auth" -> auth(call, result)
             "isAliPayInstalled" -> isAliPayInstalled(result)
-            "dedute" -> dedute(call, result)
+            "deduct" -> deduct(call, result)
             else -> result.notImplemented()
         }
     }
@@ -51,11 +54,16 @@ class TobaisPluginDelegate : CoroutineScope {
     }
 
 
-    private fun dedute(call: MethodCall, result: Result) {
-        val callback = OpenAuthTask.Callback { resultCode, memo, _ ->
+    private fun deduct(call: MethodCall, result: Result) {
+        val callback = OpenAuthTask.Callback { resultCode, memo, bundle ->
             launch {
                 withContext(Dispatchers.Main) {
-                    result.success(mapOf("resultStatus" to resultCode, "memo" to memo))
+                    val response = JSONObject(bundle.getString("alipay_user_agreement_page_sign_response"))
+                    var map = HashMap<String, Any>()
+                    for(key in response.keys()) {
+                        map[key] = response.get(key)
+                    }
+                    result.success(map)
                 }
             }
         }

@@ -158,7 +158,8 @@ __weak TobiasPlugin *__tobiasPlugin;
 
 - (void)handleServiceResult:(NSDictionary*)dictionary {
     if (self.callback) {
-        NSMutableDictionary *mutableDictionary = [NSMutableDictionary dictionaryWithDictionary:dictionary];
+        NSDictionary *response = [dictionary objectForKey:@"alipay_user_agreement_page_sign_response"] ?: @{};
+        NSMutableDictionary *mutableDictionary = [NSMutableDictionary dictionaryWithDictionary:response];
         [mutableDictionary setValue:@"iOS" forKey:@"platform"];
         self.callback(mutableDictionary);
         self.callback = nil;
